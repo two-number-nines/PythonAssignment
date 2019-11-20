@@ -3,9 +3,8 @@ from bs4 import BeautifulSoup as Soup
 import csv
 
 
-def convert_xml_to_csv(xml_file):
-    f = open('/Users/vmulder/PycharmProjects/Octo/file.csv', 'w')
-    writer = csv.writer(f, delimiter='|')
+def convert_xml_to_csv(xml_file, csv_file):
+    writer = csv.writer(csv_file, delimiter='|')
     head = ['identificatie', 'openbareRuimteNaam', 'BegindatumTijdvakGeldigheid',
             'EinddatumTijdVakGeldigheid', 'openbareRuimteNaam']
     writer.writerow(head)
@@ -13,39 +12,35 @@ def convert_xml_to_csv(xml_file):
     row = []
     for q in soup.find('product_LVC:LVC-product'):
         for x in q:
-            if x.find_parent().name == 'OpenbareRuimte' and x.name == 'identificatie':
+            if (x.name == 'identificatie' and x.find_parent().name == 'OpenbareRuimte') or x.name == 'openbareRuimteNaam' or x.name == 'openbareRuimteType':
                 row.append(x.string)
-            elif x.name == 'openbareRuimteNaam':
-                row.append(x.string)
-            elif x.name == 'openbareRuimteType':
-                row.append(x.string)
-            if x.name == 'tijdvakgeldigheid':
+            elif x.name == 'tijdvakgeldigheid':
                 for y in x:
-                    print(y)
-                if x.name == 'begindatumTijdvakGeldigheid':
-                    row.append(x.string)
-                    print(x)
-                if x.find_next_sibling() == 'einddatumTijdvakGeldigheid':
-                    print("hoi")
-                    row.append(x.string)
-                    exit()
+                    if y.name == 'begindatumTijdvakGeldigheid':
+                        row.append(y.string)
+                    if y.name == 'einddatumTijdvakGeldigheid':
+                        row.append(y.string)
         writer.writerow(row)
         row = []
-    f.close()
 
 
 def main():
+    csv_file = open('/Users/vmulder/PycharmProjects/Octo/file.csv', 'w')
     if zipfile.is_zipfile('theZipFile.zip'):
-        print('True')
         zf = zipfile.ZipFile('theZipFile.zip', 'r')
+        count = 1
         for name in zf.namelist():
+            if count == 4:
+                exit()
             f = zf.open(name)
-            # i open every xml file here
-            convert_xml_to_csv(f)
-            exit()
-
+            convert_xml_to_csv(f, csv_file)
+            f.close()
+            print("done with file: " + str(count))
+            count += 1
+        csv_file.close()
     else:
         print('provide a .zip file')
+
 
 
 main()
