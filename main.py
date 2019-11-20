@@ -13,7 +13,8 @@ def convert_xml_to_csv(xml_file, csv_file):
     q = soup.find('product_LVC:LVC-product')
     for s in q:
         for x in s:
-            if (x.name == 'identificatie' and x.find_parent().name == 'OpenbareRuimte') or x.name == 'openbareRuimteNaam' or x.name == 'openbareRuimteType':
+            if (x.name == 'identificatie' and x.find_parent().name == 'OpenbareRuimte') or \
+                    x.name == 'openbareRuimteNaam' or x.name == 'openbareRuimteType':
                 row.append(x.string)
             elif x.name == 'tijdvakgeldigheid':
                 for y in x:
@@ -41,7 +42,5 @@ def main():
         csv_file.close()
     else:
         print('provide a .zip file')
-
-
 
 main()
