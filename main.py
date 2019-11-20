@@ -10,8 +10,9 @@ def convert_xml_to_csv(xml_file, csv_file):
     writer.writerow(head)
     soup = Soup(xml_file, 'xml')
     row = []
-    for q in soup.find('product_LVC:LVC-product'):
-        for x in q:
+    q = soup.find('product_LVC:LVC-product')
+    for s in q:
+        for x in s:
             if (x.name == 'identificatie' and x.find_parent().name == 'OpenbareRuimte') or x.name == 'openbareRuimteNaam' or x.name == 'openbareRuimteType':
                 row.append(x.string)
             elif x.name == 'tijdvakgeldigheid':
