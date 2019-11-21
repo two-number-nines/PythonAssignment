@@ -1,34 +1,35 @@
-import zipfile
 from bs4 import BeautifulSoup as Soup
+import zipfile
 import csv
+import sys
 
 
 def convert_xml_to_csv(xml_file, csv_file):
     writer = csv.writer(csv_file, delimiter='|')
+    soup = Soup(xml_file, 'xml')
+    batch = soup.find('product_LVC:LVC-product')
     head = ['identificatie', 'openbareRuimteNaam', 'BegindatumTijdvakGeldigheid',
             'EinddatumTijdVakGeldigheid', 'openbareRuimteNaam']
-    writer.writerow(head)
-    soup = Soup(xml_file, 'xml')
     row = []
-    q = soup.find('product_LVC:LVC-product')
-    for s in q:
-        for x in s:
-            if (x.name == 'identificatie' and x.find_parent().name == 'OpenbareRuimte') or \
-                    x.name == 'openbareRuimteNaam' or x.name == 'openbareRuimteType':
-                row.append(x.string)
-            elif x.name == 'tijdvakgeldigheid':
-                for y in x:
-                    if y.name == 'begindatumTijdvakGeldigheid':
+    writer.writerow(head)
+    for item in batch:
+        for element in item:
+            if (element.name == 'identificatie' and element.find_parent().name == 'OpenbareRuimte') or \
+                    element.name == 'openbareRuimteNaam' or element.name == 'openbareRuimteType':
+                row.append(element.string)
+            elif element.name == 'tijdvakgeldigheid':
+                for x in element:
+                    if x.name == 'begindatumTijdvakGeldigheid':
                         row.append(y.string)
-                    if y.name == 'einddatumTijdvakGeldigheid':
+                    if x.name == 'einddatumTijdvakGeldigheid':
                         row.append(y.string)
         writer.writerow(row)
         row = []
 
 
-def main():
+def main(zip_file):
     csv_file = open('/Users/vmulder/PycharmProjects/Octo/file.csv', 'w')
-    if zipfile.is_zipfile('theZipFile.zip'):
+    if zipfile.is_zipfile(zip_file):
         zf = zipfile.ZipFile('theZipFile.zip', 'r')
         count = 1
         for name in zf.namelist():
@@ -43,4 +44,9 @@ def main():
     else:
         print('provide a .zip file')
 
-main()
+
+if __name__ == "__main__":
+    if len(sys.argv) == 2:
+        main(sys.argv[1])
+    else:
+        print('Add .zip file as argument.')
