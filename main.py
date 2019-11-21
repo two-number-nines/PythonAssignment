@@ -1,7 +1,10 @@
 from bs4 import BeautifulSoup as Soup
-import zipfile as zipf
+from datetime import datetime
+import zipfile
 import csv
 import sys
+
+BASE_PATH = '/Users/vmulder/PycharmProjects/Octo/'
 
 
 def convert_xml_to_csv(xml_file, csv_file):
@@ -18,16 +21,17 @@ def convert_xml_to_csv(xml_file, csv_file):
                     element.name == 'openbareRuimteNaam' or element.name == 'openbareRuimteType':
                 row.append(element.string)
             elif element.name == 'tijdvakgeldigheid':
-                for x in element:
-                    if x.name == 'begindatumTijdvakGeldigheid' or x.name == 'einddatumTijdvakGeldigheid':
-                        row.append(x.string)
+                for nested_element in element:
+                    if nested_element.name == 'begindatumTijdvakGeldigheid' or \
+                            nested_element.name == 'einddatumTijdvakGeldigheid':
+                        row.append(nested_element.string)
         writer.writerow(row)
         row = []
 
 
-def check_zip_file(zip_file):
-    if zipf.is_zipfile(zip_file):
-        zf = zipf.ZipFile(zip_file, 'r')
+def validate_zip_file(zip_file):
+    if zipfile.is_zipfile(zip_file):
+        zf = zipfile.ZipFile(zip_file, 'r')
         return zf
     else:
         print('provide a .zip file')
@@ -35,16 +39,14 @@ def check_zip_file(zip_file):
 
 
 def main(zip_file):
-    csv_file = open('/Users/vmulder/PycharmProjects/Octo/file.csv', 'w')
-    zf = check_zip_file(zip_file)
-    count = 1
+    zf = validate_zip_file(zip_file)
+    csv_file = open(BASE_PATH + str(datetime.now()) + ' file.csv', 'w')
     for name in zf.namelist():
         f = zf.open(name)
         if name.endswith('.xml'):
             convert_xml_to_csv(f, csv_file)
             f.close()
             print("done with file: " + name)
-            count += 1
     csv_file.close()
 
 
